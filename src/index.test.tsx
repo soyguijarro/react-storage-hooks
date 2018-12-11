@@ -1,11 +1,11 @@
 import React, { Fragment } from 'react';
 import {
-  render,
-  fireEvent,
-  waitForElement,
   cleanup,
+  fireEvent,
+  render,
+  waitForElement,
 } from 'react-testing-library';
-import { useStorageState, useStorageReducer } from './';
+import { useStorageReducer, useStorageState } from './index';
 
 afterEach(() => {
   cleanup();
@@ -21,7 +21,7 @@ const SOME_STORAGE_ERROR_MESSAGE = 'Storage error';
 const readFromStorage = key => localStorage.getItem(key);
 const writeToStorage = (key, value) => localStorage.setItem(key, value);
 const fireStorageEvent = (key, value) => {
-  fireEvent(window, new window.MessageEvent('storage', { key, value }));
+  fireEvent(window, new StorageEvent('storage', { key, newValue: value }));
 };
 const mockStorageError = (method, error) => {
   // Cannot mock localStorage methods directly: https://github.com/facebook/jest/issues/6798
