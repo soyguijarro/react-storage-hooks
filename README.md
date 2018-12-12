@@ -6,9 +6,9 @@ Custom [React hooks](https://reactjs.org/docs/hooks-intro) for keeping applicati
 
 :sparkles: **Fully featured**. Automatically stringifies and parses values coming and going to storage, keeps state in sync between tabs by listening to [storage events](https://developer.mozilla.org/en-US/docs/Web/API/StorageEvent), and generally handles non-straightforward use cases correctly, like dynamically changing the storage key provided. Expect it to **just work**.
 
-:zap: **Fast and reliable**. Only reads from storage when necessary and always updates application state before writing. Doesn't break if access to `localStorage` fails: informs you about it, but keeps updating the state.
+:zap: **Fast and reliable**. No external dependencies. Only reads from storage when necessary and always updates application state before writing. Doesn't break if access to `localStorage` fails.
 
-:package: No external **dependencies**.
+:capital_abcd: **Type definitions** included. Written in TypeScript.
 
 :muscle: Thoroughly backed by **tests**.
 
