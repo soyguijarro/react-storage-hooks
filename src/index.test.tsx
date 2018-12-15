@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 import {
   cleanup,
   fireEvent,
+  flushEffects,
   render,
   waitForElement,
 } from 'react-testing-library';
@@ -228,22 +229,22 @@ describe.each([
     expect(queryByText(SOME_STORAGE_ERROR_MESSAGE)).toBeNull();
   });
 
-  // Waiting on support for window events: https://github.com/kentcdodds/dom-testing-library/pull/165
-  test.skip('updates state when storage event for matching key is fired', () => {
+  test('updates state when storage event for matching key is fired', () => {
     const { getByText } = render(
       <Component storageKey={SOME_STORAGE_KEY} defaultState={{ count: 0 }} />
     );
+    flushEffects();
 
     fireStorageEvent(SOME_STORAGE_KEY, '{"count":10}');
 
     getByText('10');
   });
 
-  // Waiting on support for window events: https://github.com/kentcdodds/dom-testing-library/pull/165
-  test.skip('does not update state when storage event for different key is fired', () => {
+  test('does not update state when storage event for different key is fired', () => {
     const { getByText } = render(
       <Component storageKey={SOME_STORAGE_KEY} defaultState={{ count: 0 }} />
     );
+    flushEffects();
 
     fireStorageEvent('random-key', '{"count":10}');
 
