@@ -4,6 +4,7 @@ import {
   fireEvent,
   flushEffects,
   render,
+  wait,
   waitForElement,
 } from 'react-testing-library';
 import { useStorageReducer, useStorageState } from './index';
@@ -133,23 +134,38 @@ describe.each([
       getByText('0');
     });
   } else {
-    test('dispatches initial action if provided (lazy initialization)', () => {
+    test('applies provided initial action to storage data (lazy initialization)', async () => {
       writeToStorage(SOME_STORAGE_KEY, '{"count":5}');
 
       const { getByText } = render(
         <ReducerCounter
           storageKey={SOME_STORAGE_KEY}
           defaultState={{ count: 0 }}
-          initialAction={{ type: 'add', payload: 5 }}
+          initialAction={{ type: 'add', payload: 10 }}
+        />
+      );
+
+      getByText('15');
+      await wait();
+      expect(readFromStorage(SOME_STORAGE_KEY)).toBe('{"count":15}');
+    });
+
+    test('applies provided initial action to default state (lazy initialization)', async () => {
+      const { getByText } = render(
+        <ReducerCounter
+          storageKey={SOME_STORAGE_KEY}
+          defaultState={{ count: 0 }}
+          initialAction={{ type: 'add', payload: 10 }}
         />
       );
 
       getByText('10');
+      await wait();
       expect(readFromStorage(SOME_STORAGE_KEY)).toBe('{"count":10}');
     });
   }
 
-  test('updates state and writes to storage', () => {
+  test('updates state and writes to storage', async () => {
     const { getByText } = render(
       <Component storageKey={SOME_STORAGE_KEY} defaultState={{ count: 5 }} />
     );
@@ -157,11 +173,13 @@ describe.each([
     fireEvent.click(getByText(INCREMENT_BUTTON_TEXT));
 
     getByText('6');
+    await wait();
     expect(readFromStorage(SOME_STORAGE_KEY)).toBe('{"count":6}');
 
     fireEvent.click(getByText(RESET_BUTTON_TEXT));
 
     getByText('0');
+    await wait();
     expect(readFromStorage(SOME_STORAGE_KEY)).toBe('{"count":0}');
   });
 
@@ -178,7 +196,7 @@ describe.each([
     await waitForElement(() => getByText(SOME_STORAGE_ERROR_MESSAGE));
   });
 
-  test('updates state with new default state if provided key changes', () => {
+  test('updates state with new default state if provided key changes', async () => {
     const { getByText, rerender } = render(
       <Component storageKey={SOME_STORAGE_KEY} defaultState={{ count: 0 }} />
     );
@@ -186,10 +204,10 @@ describe.each([
       <Component storageKey={OTHER_STORAGE_KEY} defaultState={{ count: 5 }} />
     );
 
-    getByText('5');
+    await waitForElement(() => getByText('5'));
   });
 
-  test('updates state with new storage data if provided key changes', () => {
+  test('updates state with new storage data if provided key changes', async () => {
     writeToStorage(OTHER_STORAGE_KEY, '{"count":5}');
 
     const { getByText, rerender } = render(
@@ -197,10 +215,10 @@ describe.each([
     );
     rerender(<Component storageKey={OTHER_STORAGE_KEY} />);
 
-    getByText('5');
+    await waitForElement(() => getByText('5'));
   });
 
-  test('writes to new key instead of previous one if provided key changes', () => {
+  test('writes to new key instead of previous one if provided key changes', async () => {
     writeToStorage(SOME_STORAGE_KEY, '{"count":1}');
     writeToStorage(OTHER_STORAGE_KEY, '{"count":5}');
 
@@ -208,10 +226,9 @@ describe.each([
       <Component storageKey={SOME_STORAGE_KEY} />
     );
     rerender(<Component storageKey={OTHER_STORAGE_KEY} />);
-    fireEvent.click(getByText(INCREMENT_BUTTON_TEXT));
 
-    getByText('6');
-    expect(readFromStorage(OTHER_STORAGE_KEY)).toBe('{"count":6}');
+    await waitForElement(() => getByText('5'));
+    expect(readFromStorage(OTHER_STORAGE_KEY)).toBe('{"count":5}');
     expect(readFromStorage(SOME_STORAGE_KEY)).toBe('{"count":1}');
   });
 
@@ -246,7 +263,7 @@ describe.each([
     );
     flushEffects();
 
-    fireStorageEvent('random-key', '{"count":10}');
+    fireStorageEvent(OTHER_STORAGE_KEY, '{"count":10}');
 
     getByText('0');
   });

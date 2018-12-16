@@ -42,7 +42,24 @@ const useStorageListener = <V>(
   }, []);
 };
 
-type WriteError = Error | undefined;
+const useStorageWriter = <S>(key: string, state: S) => {
+  const [writeError, setWriteError] = useState<Error | undefined>(undefined);
+
+  useEffect(
+    () => {
+      writeItem(key, state).catch(setWriteError);
+    },
+    [state]
+  );
+  useEffect(
+    () => {
+      setWriteError(undefined);
+    },
+    [key]
+  );
+
+  return writeError;
+};
 
 const isObject = (value: any): value is object =>
   value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -57,20 +74,20 @@ export const useStorageReducer = <S, A>(
   reducer: React.Reducer<S, A>,
   defaultState: S,
   initialAction?: A | null
-): [S, ((action: A) => void), WriteError] => {
-  const [writeError, setWriteError] = useState<WriteError>(undefined);
-
+): [S, React.Dispatch<A>, Error | undefined] => {
   const storageReducer = (
     prevState: S,
     action: A | InternalSetStateAction<S>
   ) => {
-    if (isObject(action) && action.type === INTERNAL_SET_STATE_ACTION_TYPE) {
+    if (
+      !initialAction &&
+      isObject(action) &&
+      action.type === INTERNAL_SET_STATE_ACTION_TYPE
+    ) {
       return action.payload;
     }
 
-    const newState = reducer(prevState, action as A);
-    writeItem(key, newState).catch(setWriteError);
-    return newState;
+    return reducer(prevState, action as A);
   };
   const initialState = useMemo<S>(
     () => {
@@ -84,27 +101,25 @@ export const useStorageReducer = <S, A>(
     initialState,
     initialAction
   );
-
+  const writeError = useStorageWriter(key, state);
   useStorageListener(key, (newValue: S) => {
     dispatch({ type: INTERNAL_SET_STATE_ACTION_TYPE, payload: newValue });
   });
 
-  const [prevKey, setPrevKey] = useState(key);
-  if (key !== prevKey) {
-    dispatch({ type: INTERNAL_SET_STATE_ACTION_TYPE, payload: initialState });
-    setWriteError(undefined);
-    setPrevKey(key);
-  }
+  useEffect(
+    () => {
+      dispatch({ type: INTERNAL_SET_STATE_ACTION_TYPE, payload: initialState });
+    },
+    [key]
+  );
 
   return [state, dispatch, writeError];
 };
 
-type DefaultState<S> = S | (() => S);
-
 // tslint:disable-next-line:ban-types
 const isFunction = (fn: any): fn is Function => typeof fn === 'function';
 
-const getInitialState = <S>(key: string, defaultState: DefaultState<S>) => {
+const getInitialState = <S>(key: string, defaultState: S | (() => S)) => {
   const savedState = readItem(key);
   if (savedState !== null) {
     return savedState;
@@ -114,27 +129,20 @@ const getInitialState = <S>(key: string, defaultState: DefaultState<S>) => {
 
 export const useStorageState = <S>(
   key: string,
-  defaultState: DefaultState<S>
-): [S, typeof setState, WriteError] => {
+  defaultState: S | (() => S)
+): [S, React.Dispatch<React.SetStateAction<S>>, Error | undefined] => {
   const [state, setState] = useState<S>(() =>
     getInitialState(key, defaultState)
   );
-  const [writeError, setWriteError] = useState<WriteError>(undefined);
-
+  const writeError = useStorageWriter(key, state);
   useStorageListener(key, setState);
 
-  const [prevKey, setPrevKey] = useState(key);
-  if (key !== prevKey) {
-    setState(getInitialState(key, defaultState));
-    setWriteError(undefined);
-    setPrevKey(key);
-  }
+  useEffect(
+    () => {
+      setState(getInitialState(key, defaultState));
+    },
+    [key]
+  );
 
-  const saveState: typeof setState = newState => {
-    const computedState = isFunction(newState) ? newState(state) : newState;
-    setState(computedState);
-    writeItem(key, computedState).catch(setWriteError);
-  };
-
-  return [state, saveState, writeError];
+  return [state, setState, writeError];
 };

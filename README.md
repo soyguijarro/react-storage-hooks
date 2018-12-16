@@ -4,13 +4,13 @@ Custom [React hooks](https://reactjs.org/docs/hooks-intro) for keeping applicati
 
 :book: **Similar API to [`useState`](https://reactjs.org/docs/hooks-reference.html#usestate) and [`useReducer`](https://reactjs.org/docs/hooks-reference.html#usereducer)**. You already know how to use this library! Replace the built-in hooks with `useStorageState` and `useStorageReducer` and get persistent state for free.
 
-:sparkles: **Fully featured**. Automatically stringifies and parses values coming and going to storage, keeps state in sync between tabs by listening to [storage events](https://developer.mozilla.org/en-US/docs/Web/API/StorageEvent), and generally handles non-straightforward use cases correctly, like dynamically changing the storage key provided. Expect it to **just work**.
+:sparkles: **Fully featured**. Automatically stringifies and parses values coming and going to storage, keeps state in sync between tabs by listening to [storage events](https://developer.mozilla.org/en-US/docs/Web/API/StorageEvent) and handles non-straightforward use cases correctly. Expect it to **just work**.
 
-:zap: **Fast and reliable**. No external dependencies. Only reads from storage when necessary and always updates application state before writing. Doesn't break if access to `localStorage` fails.
+:zap: **Tiny and fast**. Less than 1kb gzipped. No external dependencies. Only reads from storage when necessary and always updates application state before writing
 
-:capital_abcd: **Type definitions** included. Written in TypeScript.
+:capital_abcd: **Completely typed**. Written in TypeScript. Type definitions included.
 
-:muscle: Thoroughly backed by **tests**.
+:muscle: **Backed by tests**. Full coverage of the whole API.
 
 ## Install
 
@@ -18,7 +18,7 @@ Custom [React hooks](https://reactjs.org/docs/hooks-intro) for keeping applicati
 
 Since this library provides custom React hooks, you need a working React environment. I recommend the official [Create React App](https://facebook.github.io/create-react-app/).
 
-Then, install the library with npm:
+Add the library to your project with npm:
 
 ```
 npm install --save react-storage-hooks
@@ -38,13 +38,13 @@ import { useStorageState, useStorageReducer } from 'react-storage-hooks';
 
 ## Usage
 
-The library includes two hooks, `useStorageState` and `useStorageReducer`. They mirror the API of React's built-in [`useState`](https://reactjs.org/docs/hooks-reference.html#usestate) and [`useReducer`](https://reactjs.org/docs/hooks-reference.html#usereducer) hooks, respectively. Please **read their docs** to learn how to use them, and don't hesitate to [file an issue](https://github.com/soyguijarro/react-storage-hooks/issues) if you happen to find diverging behavior.
+Two hooks are included: `useStorageState` and `useStorageReducer`. They mirror the API of React's built-in [`useState`](https://reactjs.org/docs/hooks-reference.html#usestate) and [`useReducer`](https://reactjs.org/docs/hooks-reference.html#usereducer) hooks, respectively. Please **read their docs** to learn how to use them, and don't hesitate to [file an issue](https://github.com/soyguijarro/react-storage-hooks/issues) if you happen to find diverging behavior.
 
 The **only but important differences** are:
 
 - You need to provide a **storage key** as an additional **first parameter**. This is mandatory.
-- The initial state parameter is actually a **default state** here. The storage data for the provided key will be used as initial state, and the default state will be used as fallback if the key is empty.
-- The array returned by the hooks has an extra last item for **write errors**. It is `undefined` by default and will be updated with [`Error` objects](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) thrown by `localStorage.setItem`, if there were any. However **the hook will keep working** to ensure your application doesn't break: state will keep updating even if the new values fail to be written to storage.
+- The initial state parameter only applies if there's no data in storage for the provided key. Otherwise the storage data will be used. Think of it as a **default state**.
+- The array returned by the hooks has an extra last item for **write errors**. It is initially `undefined`, and will be updated with [`Error` objects](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) thrown by `localStorage.setItem`. However **the hook will keep updating state** even if new values fail to be written to storage, to ensure that your application doesn't break.
 
 ### `useStorageState`
 
