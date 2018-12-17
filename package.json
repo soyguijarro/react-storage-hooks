@@ -71,11 +71,6 @@
     ]
   },
   "jest": {
-    "globals": {
-      "ts-jest": {
-        "isolatedModules": true
-      }
-    },
     "moduleFileExtensions": [
       "ts",
       "tsx",

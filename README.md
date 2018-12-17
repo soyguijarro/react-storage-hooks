@@ -1,12 +1,12 @@
 # React storage hooks
 
-Custom [React hooks](https://reactjs.org/docs/hooks-intro) for keeping application state in sync with [`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage).
+Custom [React hooks](https://reactjs.org/docs/hooks-intro) for keeping application state in sync with [`localStorage`](https://developer.mozilla.org/docs/Web/API/Window/localStorage) and [`sessionStorage`](https://developer.mozilla.org/docs/Web/API/Window/sessionStorage).
 
-:book: **Similar API to [`useState`](https://reactjs.org/docs/hooks-reference.html#usestate) and [`useReducer`](https://reactjs.org/docs/hooks-reference.html#usereducer)**. You already know how to use this library! Replace the built-in hooks with `useStorageState` and `useStorageReducer` and get persistent state for free.
+:book: **Familiar API**. You already know how to use this library! Replace the [`useState`](https://reactjs.org/docs/hooks-reference.html#usestate) and [`useReducer`](https://reactjs.org/docs/hooks-reference.html#usereducer) hooks with the ones in this library and get persistent state for free.
 
-:sparkles: **Fully featured**. Automatically stringifies and parses values coming and going to storage, keeps state in sync between tabs by listening to [storage events](https://developer.mozilla.org/en-US/docs/Web/API/StorageEvent) and handles non-straightforward use cases correctly. Expect it to **just work**.
+:sparkles: **Fully featured**. Automatically stringifies and parses values coming and going to storage, keeps state in sync between tabs by listening to [storage events](https://developer.mozilla.org/docs/Web/API/StorageEvent) and handles non-straightforward use cases correctly. Expect it to **just work**.
 
-:zap: **Tiny and fast**. Less than 1kb gzipped. No external dependencies. Only reads from storage when necessary and always updates application state before writing
+:zap: **Tiny and fast**. Less than 1kb gzipped. No external dependencies. Only reads from storage when necessary and always updates application state before writing.
 
 :capital_abcd: **Completely typed**. Written in TypeScript. Type definitions included.
 
@@ -33,35 +33,46 @@ yarn add react-storage-hooks
 And import the hooks to use them:
 
 ```javascript
-import { useStorageState, useStorageReducer } from 'react-storage-hooks';
+import {
+  useLocalStorageState,
+  useLocalStorageReducer,
+  useSessionStorageState,
+  useSessionStorageReducer,
+} from 'react-storage-hooks';
 ```
 
 ## Usage
 
-Two hooks are included: `useStorageState` and `useStorageReducer`. They mirror the API of React's built-in [`useState`](https://reactjs.org/docs/hooks-reference.html#usestate) and [`useReducer`](https://reactjs.org/docs/hooks-reference.html#usereducer) hooks, respectively. Please **read their docs** to learn how to use them, and don't hesitate to [file an issue](https://github.com/soyguijarro/react-storage-hooks/issues) if you happen to find diverging behavior.
+Four hooks are included:
+
+- For `localStorage`: `useLocalStorageState` and `useLocalStorageReducer`.
+- For `sessionStorage`: `useSessionStorageState` and `useSessionStorageReducer`.
+
+They mirror the API of React's built-in [`useState`](https://reactjs.org/docs/hooks-reference.html#usestate) and [`useReducer`](https://reactjs.org/docs/hooks-reference.html#usereducer) hooks. Please **read their docs** to learn how to use them, and don't hesitate to [file an issue](https://github.com/soyguijarro/react-storage-hooks/issues) if you happen to find diverging behavior.
 
 The **only but important differences** are:
 
 - You need to provide a **storage key** as an additional **first parameter**. This is mandatory.
 - The initial state parameter only applies if there's no data in storage for the provided key. Otherwise the storage data will be used. Think of it as a **default state**.
-- The array returned by the hooks has an extra last item for **write errors**. It is initially `undefined`, and will be updated with [`Error` objects](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) thrown by `localStorage.setItem`. However **the hook will keep updating state** even if new values fail to be written to storage, to ensure that your application doesn't break.
+- The array returned by the hooks has an extra last item for **write errors**. It is initially `undefined`, and will be updated with [`Error` objects](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error) thrown by `localStorage.setItem`. However **the hook will keep updating state** even if new values fail to be written to storage, to ensure that your application doesn't break.
 
-### `useStorageState`
+### `useLocalStorageState` and `useSessionStorageState`
 
-[`useState`](https://reactjs.org/docs/hooks-reference.html#usestate) hook with `localStorage` persistence.
+[`useState`](https://reactjs.org/docs/hooks-reference.html#usestate) hooks with `localStorage` or `sessionStorage` persistence.
 
 ```javascript
-const [state, setState, writeError] = useStorageState(key, defaultState?);
+const [state, setState, writeError] = useLocalStorageState(key, defaultState?);
+const [state, setState, writeError] = useSessionStorageState(key, defaultState?);
 ```
 
 #### Example
 
 ```javascript
 import React from 'react';
-import { useStorageState } from 'react-storage-hooks';
+import { useLocalStorageState } from 'react-storage-hooks';
 
 const Counter = () => {
-  const [count, setCount, writeError] = useStorageState('counter', 0);
+  const [count, setCount, writeError] = useLocalStorageState('counter', 0);
 
   return (
     <div>
@@ -77,12 +88,18 @@ const Counter = () => {
 };
 ```
 
-### `useStorageReducer`
+### `useLocalStorageReducer` and `useSessionStorageReducer`
 
-[`useReducer`](https://reactjs.org/docs/hooks-reference.html#usereducer) hook with `localStorage` persistence.
+[`useReducer`](https://reactjs.org/docs/hooks-reference.html#usereducer) hooks with `localStorage` or `sessionStorage` persistence.
 
 ```javascript
-const [state, dispatch, writeError] = useStorageReducer(
+const [state, dispatch, writeError] = useLocalStorageReducer(
+  key,
+  reducer,
+  defaultState,
+  initialAction?
+);
+const [state, dispatch, writeError] = useSessionStorageReducer(
   key,
   reducer,
   defaultState,
@@ -94,7 +111,7 @@ const [state, dispatch, writeError] = useStorageReducer(
 
 ```javascript
 import React from 'react';
-import { useStorageReducer } from 'react-storage-hooks';
+import { useLocalStorageReducer } from 'react-storage-hooks';
 
 const initialCount = 0;
 
@@ -112,9 +129,13 @@ const reducer = (state, action) => {
 };
 
 const Counter = () => {
-  const [state, dispatch, writeError] = useStorageReducer('counter', reducer, {
-    count: initialCount,
-  });
+  const [state, dispatch, writeError] = useLocalStorageReducer(
+    'counter',
+    reducer,
+    {
+      count: initialCount,
+    }
+  );
 
   return (
     <div>

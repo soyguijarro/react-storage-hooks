@@ -5,19 +5,19 @@ const toStorage = (value: any) => JSON.stringify(value);
 const fromStorage = (value: string | null) =>
   value !== null ? JSON.parse(value) : null;
 
-const readItem = (key: string) => {
+const readItem = (storage: Storage, key: string) => {
   try {
-    const storedValue = localStorage.getItem(key);
+    const storedValue = storage.getItem(key);
     return fromStorage(storedValue);
   } catch (e) {
     return null;
   }
 };
 
-const writeItem = <S>(key: string, value: S) =>
+const writeItem = <S>(storage: Storage, key: string, value: S) =>
   new Promise((resolve, reject) => {
     try {
-      localStorage.setItem(key, toStorage(value));
+      storage.setItem(key, toStorage(value));
       resolve();
     } catch (error) {
       reject(error);
@@ -42,12 +42,12 @@ const useStorageListener = <V>(
   }, []);
 };
 
-const useStorageWriter = <S>(key: string, state: S) => {
+const useStorageWriter = <S>(storage: Storage, key: string, state: S) => {
   const [writeError, setWriteError] = useState<Error | undefined>(undefined);
 
   useEffect(
     () => {
-      writeItem(key, state).catch(setWriteError);
+      writeItem(storage, key, state).catch(setWriteError);
     },
     [state]
   );
@@ -65,11 +65,11 @@ const isObject = (value: any): value is object =>
   value !== null && typeof value === 'object' && !Array.isArray(value);
 
 const INTERNAL_SET_STATE_ACTION_TYPE = Symbol('INTERNAL_SET_STATE_ACTION_TYPE');
-interface InternalSetStateAction<S> {
+type InternalSetStateAction<S> = {
   type: typeof INTERNAL_SET_STATE_ACTION_TYPE;
   payload: S;
-}
-export const useStorageReducer = <S, A>(
+};
+const createUseStorageReducer = (storage: Storage) => <S, A>(
   key: string,
   reducer: React.Reducer<S, A>,
   defaultState: S,
@@ -91,7 +91,7 @@ export const useStorageReducer = <S, A>(
   };
   const initialState = useMemo<S>(
     () => {
-      const savedState = readItem(key);
+      const savedState = readItem(storage, key);
       return savedState !== null ? savedState : defaultState;
     },
     [key]
@@ -101,7 +101,7 @@ export const useStorageReducer = <S, A>(
     initialState,
     initialAction
   );
-  const writeError = useStorageWriter(key, state);
+  const writeError = useStorageWriter(storage, key, state);
   useStorageListener(key, (newValue: S) => {
     dispatch({ type: INTERNAL_SET_STATE_ACTION_TYPE, payload: newValue });
   });
@@ -119,30 +119,34 @@ export const useStorageReducer = <S, A>(
 // tslint:disable-next-line:ban-types
 const isFunction = (fn: any): fn is Function => typeof fn === 'function';
 
-const getInitialState = <S>(key: string, defaultState: S | (() => S)) => {
-  const savedState = readItem(key);
-  if (savedState !== null) {
-    return savedState;
-  }
-  return isFunction(defaultState) ? defaultState() : defaultState;
-};
-
-export const useStorageState = <S>(
+const createUseStorageState = (storage: Storage) => <S>(
   key: string,
   defaultState: S | (() => S)
 ): [S, React.Dispatch<React.SetStateAction<S>>, Error | undefined] => {
-  const [state, setState] = useState<S>(() =>
-    getInitialState(key, defaultState)
-  );
-  const writeError = useStorageWriter(key, state);
+  const getInitialState = () => {
+    const savedState = readItem(storage, key);
+    if (savedState !== null) {
+      return savedState;
+    }
+    return isFunction(defaultState) ? defaultState() : defaultState;
+  };
+
+  const [state, setState] = useState<S>(getInitialState);
+  const writeError = useStorageWriter(storage, key, state);
   useStorageListener(key, setState);
 
   useEffect(
     () => {
-      setState(getInitialState(key, defaultState));
+      setState(getInitialState());
     },
     [key]
   );
 
   return [state, setState, writeError];
 };
+
+export const useLocalStorageState = createUseStorageState(localStorage);
+export const useLocalStorageReducer = createUseStorageReducer(localStorage);
+
+export const useSessionStorageState = createUseStorageState(sessionStorage);
+export const useSessionStorageReducer = createUseStorageReducer(sessionStorage);
