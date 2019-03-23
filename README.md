@@ -14,8 +14,6 @@ Custom [React hooks](https://reactjs.org/docs/hooks-intro) for keeping applicati
 
 ## Install
 
-> :warning: **React hooks are still a feature proposal**, currently in React v16.7.0-alpha.
-
 Since this library provides custom React hooks, you need a working React environment. I recommend the official [Create React App](https://facebook.github.io/create-react-app/).
 
 Add the library to your project with npm:
@@ -54,7 +52,7 @@ The **only but important differences** are:
 
 - You need to provide a **storage key** as an additional **first parameter**. This is mandatory.
 - The initial state parameter only applies if there's no data in storage for the provided key. Otherwise the storage data will be used. Think of it as a **default state**.
-- The array returned by the hooks has an extra last item for **write errors**. It is initially `undefined`, and will be updated with [`Error` objects](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error) thrown by `localStorage.setItem`. However **the hook will keep updating state** even if new values fail to be written to storage, to ensure that your application doesn't break.
+- The array returned by the hooks has an extra last item for **write errors**. It is initially `undefined`, and will be updated with [`Error` objects](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error) thrown by `Storage.setItem`. However **the hook will keep updating state** even if new values fail to be written to storage, to ensure that your application doesn't break.
 
 ### `useLocalStorageState` and `useSessionStorageState`
 
@@ -96,14 +94,14 @@ const Counter = () => {
 const [state, dispatch, writeError] = useLocalStorageReducer(
   key,
   reducer,
-  defaultState,
-  initialAction?
+  initializerArg,
+  initializer?
 );
 const [state, dispatch, writeError] = useSessionStorageReducer(
   key,
   reducer,
-  defaultState,
-  initialAction?
+  initializerArg,
+  initializer?
 );
 ```
 
