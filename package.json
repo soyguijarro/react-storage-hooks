@@ -1,6 +1,6 @@
 {
   "name": "react-storage-hooks",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "React hooks for state sync with localStorage",
   "keywords": [
     "react",
