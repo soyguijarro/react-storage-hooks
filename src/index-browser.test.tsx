@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import {
   cleanup,
   fireEvent,
@@ -31,8 +31,10 @@ const SOME_STORAGE_ERROR_MESSAGE = 'Storage error';
 
 const createReadFromStorage = (storage: Storage) => (key: string) =>
   storage.getItem(key);
-const createWriteToStorage = (storage: Storage) => (key: string, value: any) =>
-  storage.setItem(key, value);
+const createWriteToStorage = (storage: Storage) => (
+  key: string,
+  value: string
+) => storage.setItem(key, value);
 const localStorageMethods = {
   readFromStorage: createReadFromStorage(localStorage),
   writeToStorage: createWriteToStorage(localStorage),
@@ -42,7 +44,7 @@ const sessionStorageMethods = {
   writeToStorage: createWriteToStorage(sessionStorage),
 };
 
-const fireStorageEvent = (key: string, value: any) => {
+const fireStorageEvent = (key: string, value: string) => {
   fireEvent(window, new StorageEvent('storage', { key, newValue: value }));
 };
 const mockStorageError = (

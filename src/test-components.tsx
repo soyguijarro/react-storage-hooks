@@ -4,21 +4,19 @@ import { useLocalStorageState, useLocalStorageReducer } from './index';
 export const INCREMENT_BUTTON_TEXT = '+';
 export const RESET_BUTTON_TEXT = 'Reset';
 
-type CountState = { count: number };
-
-type CounterProps = {
+interface CounterProps {
   value: number | undefined;
   onIncrement: () => void;
   onReset: () => void;
   writeErrorMessage: string | undefined;
-};
+}
 
-const Counter = ({
+const Counter: React.FunctionComponent<CounterProps> = ({
   value,
   onIncrement,
   onReset,
   writeErrorMessage,
-}: CounterProps) => (
+}) => (
   <Fragment>
     {value !== undefined && <p id="value">{value}</p>}
     <button onClick={onIncrement}>{INCREMENT_BUTTON_TEXT}</button>
@@ -27,10 +25,14 @@ const Counter = ({
   </Fragment>
 );
 
-type StateCounterProps = {
+interface CountState {
+  count: number;
+}
+
+interface StateCounterProps {
   storageKey: string;
   defaultState: CountState | (() => CountState);
-};
+}
 
 export const createCounterComponentWithState = (
   useStorageState: typeof useLocalStorageState
@@ -65,11 +67,11 @@ const reducer = (state: CountState, action: CountAction) => {
   }
 };
 
-type ReducerCounterProps = {
+interface ReducerCounterProps {
   storageKey: string;
   initializerArg: CountState;
   initializer?: (arg: CountState) => CountState;
-};
+}
 
 export const createCounterComponentWithReducer = (
   useStorageReducer: typeof useLocalStorageReducer

@@ -6,10 +6,10 @@ import {
 } from './storage';
 
 const INTERNAL_SET_ACTION_TYPE = Symbol('INTERNAL_SET_ACTION_TYPE');
-type InternalSetAction<S> = {
+interface InternalSetAction<S> {
   type: typeof INTERNAL_SET_ACTION_TYPE;
   payload: S;
-};
+}
 
 const createInternalSetAction = <S>(payload: S): InternalSetAction<S> => ({
   type: INTERNAL_SET_ACTION_TYPE,

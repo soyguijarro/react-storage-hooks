@@ -1,17 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
 
-const toStorage = (value: any) => JSON.stringify(value);
+const toStorage = <V>(value: V): string => JSON.stringify(value);
 
-const fromStorage = (value: string | null) =>
+const fromStorage = <V>(value: string | null): V | null =>
   value !== null ? JSON.parse(value) : null;
 
 export const useStorageListener = <V>(
   key: string,
   onChange: (newValue: V) => void
 ): void => {
-  const handleStorageChange = (event: StorageEvent) => {
+  const handleStorageChange = (event: StorageEvent): void => {
     if (event.key === key) {
-      onChange(fromStorage(event.newValue));
+      onChange(fromStorage(event.newValue) as V);
     }
   };
 
