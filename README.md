@@ -4,6 +4,7 @@
 ![Dependencies](https://img.shields.io/david/soyguijarro/react-storage-hooks.svg)
 ![Dev dependencies](https://img.shields.io/david/dev/soyguijarro/react-storage-hooks.svg)
 [![Build status](https://travis-ci.com/soyguijarro/react-storage-hooks.svg?branch=master)](https://travis-ci.com/soyguijarro/react-storage-hooks)
+[![Test coverage](https://codecov.io/gh/soyguijarro/react-storage-hooks/branch/master/graph/badge.svg)](https://codecov.io/gh/soyguijarro/react-storage-hooks)
 ![Bundle size](https://img.shields.io/bundlephobia/minzip/react-storage-hooks.svg)
 [![MIT licensed](https://img.shields.io/github/license/soyguijarro/react-storage-hooks.svg)](https://github.com/soyguijarro/react-storage-hooks/blob/master/LICENSE)
 
