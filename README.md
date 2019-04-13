@@ -1,10 +1,16 @@
-# React storage hooks
+# React storage hooks [![Latest version](https://img.shields.io/npm/v/react-storage-hooks.svg)](https://www.npmjs.com/package/react-storage-hooks)
+
+![Dependencies](https://img.shields.io/david/soyguijarro/react-storage-hooks.svg)
+![Dev dependencies](https://img.shields.io/david/dev/soyguijarro/react-storage-hooks.svg)
+[![Build status](https://travis-ci.com/soyguijarro/react-storage-hooks.svg?branch=master)](https://travis-ci.com/soyguijarro/react-storage-hooks)
+![Bundle size](https://img.shields.io/bundlephobia/minzip/react-storage-hooks.svg)
+[![MIT licensed](https://img.shields.io/github/license/soyguijarro/react-storage-hooks.svg)](https://github.com/soyguijarro/react-storage-hooks/blob/master/LICENSE)
 
 Custom [React hooks](https://reactjs.org/docs/hooks-intro) for keeping application state in sync with [`localStorage`](https://developer.mozilla.org/docs/Web/API/Window/localStorage) and [`sessionStorage`](https://developer.mozilla.org/docs/Web/API/Window/sessionStorage).
 
 :book: **Familiar API**. You already know how to use this library! Replace the [`useState`](https://reactjs.org/docs/hooks-reference.html#usestate) and [`useReducer`](https://reactjs.org/docs/hooks-reference.html#usereducer) hooks with the ones in this library and get persistent state for free.
 
-:sparkles: **Fully featured**. Automatically stringifies and parses values coming and going to storage, keeps state in sync between tabs by listening to [storage events](https://developer.mozilla.org/docs/Web/API/StorageEvent) and handles non-straightforward use cases correctly. Expect it to **just work**.
+:sparkles: **Fully featured**. Automatically stringifies and parses values coming and going to storage, keeps state in sync between tabs by listening to [storage events](https://developer.mozilla.org/docs/Web/API/StorageEvent) and handles non-straightforward use cases correctly. Also supports server-side rendering. Expect it to **just work**.
 
 :zap: **Tiny and fast**. Less than 1kb gzipped. No external dependencies. Only reads from storage when necessary and always updates application state before writing.
 
@@ -12,7 +18,7 @@ Custom [React hooks](https://reactjs.org/docs/hooks-intro) for keeping applicati
 
 :muscle: **Backed by tests**. Full coverage of the whole API.
 
-## Install
+## Installation
 
 Since this library provides custom React hooks, you need a working React environment. I recommend the official [Create React App](https://facebook.github.io/create-react-app/).
 

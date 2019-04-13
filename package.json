@@ -11,15 +11,15 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "lint": "eslint --fix src/*.{ts,tsx}",
-    "format": "prettier --write *.md src/*.{ts,tsx}",
+    "lint": "eslint src/*.{ts,tsx}",
+    "fmt": "prettier --check *.md src/*.{ts,tsx}",
     "test": "jest",
     "coverage": "jest --coverage",
     "compile": "tsc --noEmit",
-    "check": "npm run lint && npm run compile && npm run format && npm run coverage",
+    "check": "npm run lint && npm run fmt && npm run compile && npm run coverage",
     "prebuild": "del dist",
     "build": "tsc",
-    "prepublishOnly": "npm run coverage && npm run build"
+    "prepublishOnly": "npm run check && npm run build"
   },
   "files": [
     "dist"
