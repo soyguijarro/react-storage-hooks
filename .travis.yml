@@ -1,9 +1,6 @@
 language: node_js
-node_js:
-  - 'lts/*'
+node_js: 'lts/*'
 cache: npm
-scripts:
-  - npm install codecov -g
-  - npm run check
-after_success:
-  - codecov
+before_script: npm install codecov -g
+script: npm run check
+after_success: codecov
