@@ -19,7 +19,8 @@
     "check": "npm run lint && npm run fmt && npm run compile && npm run coverage",
     "prebuild": "del dist",
     "build": "tsc",
-    "prepublishOnly": "npm run check && npm run build"
+    "prepublishOnly": "npm run check && npm run build",
+    "release": "git push --follow-tags origin master"
   },
   "files": [
     "dist"

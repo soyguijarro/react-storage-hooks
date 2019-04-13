@@ -4,3 +4,10 @@ cache: npm
 before_script: npm install codecov -g
 script: npm run check
 after_success: codecov
+deploy:
+  provider: npm
+  email: 'hola@soyguijarro.com'
+  api_key: $NPM_TOKEN
+  skip_cleanup: true
+  on:
+    tags: true
