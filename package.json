@@ -1,6 +1,6 @@
 {
   "name": "react-storage-hooks",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "React hooks for state sync with localStorage",
   "keywords": [
     "react",
@@ -19,7 +19,7 @@
     "check": "npm run lint && npm run fmt && npm run compile && npm run coverage",
     "prebuild": "del dist",
     "build": "tsc",
-    "prepublishOnly": "npm run check && npm run build",
+    "prepublishOnly": "npm run build",
     "release": "git push --follow-tags origin master"
   },
   "files": [
