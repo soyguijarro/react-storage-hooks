@@ -1,5 +1,6 @@
-# React storage hooks [![Latest version](https://img.shields.io/npm/v/react-storage-hooks.svg)](https://www.npmjs.com/package/react-storage-hooks)
+# React storage hooks
 
+[![Version](https://img.shields.io/npm/v/react-storage-hooks.svg)](https://www.npmjs.com/package/react-storage-hooks)
 ![Dependencies](https://img.shields.io/david/soyguijarro/react-storage-hooks.svg)
 ![Dev dependencies](https://img.shields.io/david/dev/soyguijarro/react-storage-hooks.svg)
 [![Build status](https://travis-ci.com/soyguijarro/react-storage-hooks.svg?branch=master)](https://travis-ci.com/soyguijarro/react-storage-hooks)

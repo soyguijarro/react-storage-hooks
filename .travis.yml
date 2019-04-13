@@ -1,5 +1,5 @@
 language: node_js
 node_js:
   - 'lts/*'
-script: check
+script: npm run check
 cache: npm
