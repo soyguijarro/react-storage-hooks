@@ -17,7 +17,7 @@ const createUseStorageState = (storage: Storage) => <S>(
 
   useEffect(() => {
     setState(savedState);
-  }, [key]);
+  }, [key, savedState]);
 
   return [state, setState, writeError];
 };

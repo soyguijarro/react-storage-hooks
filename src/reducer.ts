@@ -57,7 +57,7 @@ const createUseStorageReducer = (storage: Storage) => <
         initializer ? initializer(storageInitializerArg) : storageInitializerArg
       )
     );
-  }, [key]);
+  }, [key, dispatch, initializer, storageInitializerArg]);
 
   return [state, dispatch, writeError];
 };

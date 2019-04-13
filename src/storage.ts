@@ -42,7 +42,7 @@ export const useStorageWriter = <S>(
 
   useEffect(() => {
     writeItem(storage, key, state).catch(setWriteError);
-  }, [state]);
+  }, [state, key, storage]);
   useEffect(() => {
     setWriteError(undefined);
   }, [key]);
@@ -67,4 +67,4 @@ export const useStorageReader = <S>(
   useMemo(() => {
     const storedValue = readItem<S>(storage, key);
     return storedValue !== null ? storedValue : defaultValue;
-  }, [key]);
+  }, [key, storage, defaultValue]);
