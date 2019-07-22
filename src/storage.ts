@@ -10,7 +10,7 @@ export const useStorageListener = <V>(
   onChange: (newValue: V) => void
 ): void => {
   const handleStorageChange = (event: StorageEvent): void => {
-    if (event.key === key) {
+    if (event.key === key && (event.newValue === event.oldValue) === false) {
       onChange(fromStorage(event.newValue) as V);
     }
   };
