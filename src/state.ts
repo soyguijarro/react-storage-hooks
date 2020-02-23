@@ -1,25 +1,36 @@
-import { useEffect, useState } from 'react';
-import {
-  useStorageReader,
-  useStorageWriter,
-  useStorageListener,
-} from './storage';
+import { useState, Dispatch, SetStateAction } from 'react';
 
-const createUseStorageState = (storage: Storage) => <S>(
+import {
+  useInitialState,
+  useStorageListener,
+  useStorageWriter,
+  StorageObj,
+} from './common';
+
+function useStorageState<S>(
+  storage: StorageObj,
   key: string,
   defaultState: S | (() => S)
-): [S, React.Dispatch<React.SetStateAction<S>>, Error | undefined] => {
-  const savedState = useStorageReader(storage, key, defaultState);
+): [S, Dispatch<SetStateAction<S>>, Error | undefined];
 
-  const [state, setState] = useState(savedState);
+function useStorageState<S>(
+  storage: StorageObj,
+  key: string
+): [S | null, Dispatch<SetStateAction<S | null>>, Error | undefined];
+
+function useStorageState<S>(
+  storage: StorageObj,
+  key: string,
+  defaultState: S | (() => S) | null = null
+) {
+  const [state, setState] = useState(
+    useInitialState(storage, key, defaultState)
+  );
+
+  useStorageListener(storage, key, defaultState, setState);
   const writeError = useStorageWriter(storage, key, state);
-  useStorageListener<S>(key, setState);
-
-  useEffect(() => {
-    setState(savedState);
-  }, [key, savedState]);
 
   return [state, setState, writeError];
-};
+}
 
-export default createUseStorageState;
+export default useStorageState;

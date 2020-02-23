@@ -1,123 +1,99 @@
 {
   "name": "react-storage-hooks",
   "version": "3.0.3",
-  "description": "React hooks for state sync with localStorage",
+  "description": "React hooks for persistent state",
   "keywords": [
     "react",
-    "hooks",
+    "react-hooks",
+    "persistent",
+    "useState",
+    "useReducer",
     "storage",
-    "persistence"
+    "localstorage",
+    "sessionstorage"
   ],
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "lint": "eslint src/*.{ts,tsx}",
-    "fmt": "prettier --check *.md src/*.{ts,tsx}",
-    "test": "jest",
-    "coverage": "jest --coverage",
-    "compile": "tsc --noEmit",
-    "check": "npm run lint && npm run fmt && npm run compile && npm run coverage",
+    "lint": "eslint src/*.ts",
+    "fmt": "prettier --check *.md *.json src/*.ts",
+    "types": "tsd",
+    "test": "jest --verbose",
+    "test:watch": "npm test -- --watch",
+    "test:coverage": "npm test -- --coverage",
+    "size": "size-limit",
+    "precheck": "npm run build",
+    "check": "npm run lint && npm run fmt && npm run types && npm run test:coverage && npm run size",
     "prebuild": "del dist",
     "build": "tsc",
-    "prepublishOnly": "npm run build",
-    "release": "git push --follow-tags origin master"
+    "prepublishOnly": "npm run check",
+    "release": "git push --follow-tags origin master",
+    "examples:setup": "cd examples && npm install",
+    "preexamples": "npm run build && npm link",
+    "examples": "cd examples && npm link react-storage-hooks && npm start"
   },
   "files": [
-    "dist"
+    "dist",
+    "dist/index.d.ts"
   ],
   "author": "Ramón Guijarro <hola@soyguijarro.com>",
   "license": "MIT",
   "repository": "https://github.com/soyguijarro/react-storage-hooks",
   "peerDependencies": {
-    "react": "^16.8.0",
-    "react-dom": "^16.8.0"
-  },
-  "devDependencies": {
-    "@types/jest": "^24.0.11",
-    "@types/react": "^16.8.13",
-    "@types/react-dom": "^16.8.4",
-    "@typescript-eslint/eslint-plugin": "^1.6.0",
-    "@typescript-eslint/parser": "^1.6.0",
-    "del-cli": "^1.1.0",
-    "eslint": "^5.16.0",
-    "eslint-config-prettier": "^4.1.0",
-    "eslint-plugin-react": "^7.12.4",
-    "eslint-plugin-react-hooks": "^1.6.0",
-    "husky": "^1.3.1",
-    "jest": "^24.7.1",
-    "lint-staged": "^8.1.5",
-    "prettier": "^1.17.0",
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "react-test-renderer": "^16.8.6",
-    "react-testing-library": "^6.1.2",
-    "ts-jest": "^24.0.2",
-    "typescript": "^3.4.3"
+    "react": "^16.8.0"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged && npm run compile && npm run coverage"
+      "pre-commit": "lint-staged && npm run test:coverage"
     }
   },
   "prettier": {
-    "semi": true,
     "singleQuote": true,
     "trailingComma": "es5"
   },
   "eslintConfig": {
     "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-      "project": "./tsconfig.json"
-    },
     "plugins": [
       "@typescript-eslint",
       "react-hooks"
     ],
     "extends": [
       "plugin:@typescript-eslint/recommended",
-      "plugin:react/recommended",
+      "plugin:react-app/recommended",
       "prettier",
       "prettier/@typescript-eslint"
     ],
+    "rules": {
+      "no-console": "error",
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "error",
+      "@typescript-eslint/explicit-function-return-type": "off"
+    },
     "settings": {
       "react": {
         "version": "detect"
       }
-    },
-    "rules": {
-      "@typescript-eslint/explicit-function-return-type": [
-        "off"
-      ],
-      "react/display-name": [
-        false
-      ],
-      "react/prop-types": [
-        false
-      ],
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "error"
     }
   },
   "lint-staged": {
-    "*.{md,json}": [
+    "*.{md,json}": "prettier --write",
+    "*.ts": [
       "prettier --write",
-      "git add"
-    ],
-    "*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write",
-      "git add"
+      "eslint --fix"
     ]
   },
   "jest": {
     "moduleFileExtensions": [
       "ts",
-      "tsx",
       "js"
     ],
     "preset": "ts-jest",
     "testMatch": [
-      "**/src/*.test.{ts,tsx}"
+      "**/src/tests/*.test.ts"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "<rootDir>/src/tests/"
     ],
     "coverageThreshold": {
       "global": {
@@ -127,5 +103,37 @@
         "statements": 100
       }
     }
+  },
+  "tsd": {
+    "directory": "src"
+  },
+  "size-limit": [
+    {
+      "limit": "700 B",
+      "path": "dist/index.js"
+    }
+  ],
+  "devDependencies": {
+    "@size-limit/preset-small-lib": "^4.0.2",
+    "@testing-library/react-hooks": "^3.2.1",
+    "@types/jest": "^25.1.3",
+    "@types/react": "^16.9.23",
+    "@typescript-eslint/eslint-plugin": "^2.21.0",
+    "@typescript-eslint/parser": "^2.21.0",
+    "del-cli": "^3.0.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-react-app": "^6.2.1",
+    "eslint-plugin-react-hooks": "^2.5.0",
+    "husky": "^4.2.3",
+    "jest": "^25.1.0",
+    "lint-staged": "^10.0.8",
+    "prettier": "^1.19.1",
+    "react": "^16.13.0",
+    "react-test-renderer": "^16.13.0",
+    "size-limit": "^4.0.2",
+    "ts-jest": "^25.2.1",
+    "tsd": "^0.11.0",
+    "typescript": "^3.8.3"
   }
 }

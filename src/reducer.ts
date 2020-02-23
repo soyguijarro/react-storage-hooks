@@ -1,65 +1,68 @@
-import { useEffect, useReducer } from 'react';
-import {
-  useStorageReader,
-  useStorageWriter,
-  useStorageListener,
-} from './storage';
+import { useReducer, Reducer, Dispatch } from 'react';
 
-const INTERNAL_SET_ACTION_TYPE = Symbol('INTERNAL_SET_ACTION_TYPE');
-interface InternalSetAction<S> {
-  type: typeof INTERNAL_SET_ACTION_TYPE;
-  payload: S;
+import {
+  useInitialState,
+  useStorageListener,
+  useStorageWriter,
+  StorageObj,
+} from './common';
+
+const FORCE_STATE_ACTION = '__FORCE_STATE_INTERNAL_API__';
+type ForceStateAction<S> = { type: typeof FORCE_STATE_ACTION; payload: S };
+
+function isForceStateAction<S, A>(
+  action: A | ForceStateAction<S>
+): action is ForceStateAction<S> {
+  return (
+    typeof action === 'object' &&
+    action !== null &&
+    'type' in action &&
+    action.type === FORCE_STATE_ACTION
+  );
 }
 
-const createInternalSetAction = <S>(payload: S): InternalSetAction<S> => ({
-  type: INTERNAL_SET_ACTION_TYPE,
-  payload,
-});
+function addForceStateActionToReducer<S, A>(reducer: Reducer<S, A>) {
+  return (state: S, action: A | ForceStateAction<S>) => {
+    if (isForceStateAction(action)) return action.payload;
+    return reducer(state, action);
+  };
+}
 
-const isInternalSetAction = <S>(action: any): action is InternalSetAction<S> =>
-  action && action.type === INTERNAL_SET_ACTION_TYPE;
-
-const createStorageReducer = <R extends React.Reducer<any, any>, I>(
-  reducer: R
-) => (
-  prevState: React.ReducerState<R>,
-  action: I | InternalSetAction<React.ReducerState<R>>
-): React.ReducerState<R> =>
-  isInternalSetAction(action) ? action.payload : reducer(prevState, action);
-
-const createUseStorageReducer = (storage: Storage) => <
-  R extends React.Reducer<any, any>,
-  I
->(
+function useStorageReducer<S, A>(
+  storage: StorageObj,
   key: string,
-  reducer: R,
-  initializerArg: I & React.ReducerState<R>,
-  initializer?: (arg: I & React.ReducerState<R>) => React.ReducerState<R>
-): [
-  React.ReducerState<R>,
-  React.Dispatch<React.ReducerAction<R>>,
-  Error | undefined
-] => {
-  const storageReducer = createStorageReducer<R, I>(reducer);
-  const storageInitializerArg = useStorageReader(storage, key, initializerArg);
-  const [state, dispatch] = initializer
-    ? useReducer(storageReducer, storageInitializerArg, initializer)
-    : useReducer(storageReducer, storageInitializerArg);
+  reducer: Reducer<S, A>,
+  defaultState: S
+): [S, Dispatch<A>, Error | undefined];
 
-  const writeError = useStorageWriter(storage, key, state);
-  useStorageListener<React.ReducerState<R>>(key, newValue => {
-    dispatch(createInternalSetAction(newValue));
+function useStorageReducer<S, A, I>(
+  storage: StorageObj,
+  key: string,
+  reducer: Reducer<S, A>,
+  defaultInitialArg: I,
+  defaultInit: (defaultInitialArg: I) => S
+): [S, Dispatch<A>, Error | undefined];
+
+function useStorageReducer<S, A, I = S>(
+  storage: StorageObj,
+  key: string,
+  reducer: Reducer<S, A>,
+  defaultInitialArg: I,
+  defaultInit: (defaultInitialArg: I | S) => S = x => x as S
+): [S, Dispatch<A>, Error | undefined] {
+  const defaultState = defaultInit(defaultInitialArg);
+
+  const [state, dispatch] = useReducer(
+    addForceStateActionToReducer(reducer),
+    useInitialState(storage, key, defaultState)
+  );
+
+  useStorageListener(storage, key, defaultState, (newValue: S) => {
+    dispatch({ type: FORCE_STATE_ACTION, payload: newValue });
   });
-
-  useEffect(() => {
-    dispatch(
-      createInternalSetAction(
-        initializer ? initializer(storageInitializerArg) : storageInitializerArg
-      )
-    );
-  }, [key, dispatch, initializer, storageInitializerArg]);
+  const writeError = useStorageWriter(storage, key, state);
 
   return [state, dispatch, writeError];
-};
+}
 
-export default createUseStorageReducer;
+export default useStorageReducer;

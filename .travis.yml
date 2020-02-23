@@ -6,7 +6,7 @@ script: npm run check
 after_success: codecov
 deploy:
   provider: npm
-  email: hola@soyguijarro.com
+  email: $NPM_EMAIL
   api_key: $NPM_TOKEN
   skip_cleanup: true
   on:

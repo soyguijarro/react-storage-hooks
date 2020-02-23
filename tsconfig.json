@@ -8,10 +8,8 @@
     "sourceMap": true,
     "outDir": "./dist/",
     "strict": true,
-    "noImplicitAny": true,
     "moduleResolution": "node",
     "esModuleInterop": true
   },
-  "include": ["src"],
-  "exclude": ["src/*.test.ts", "src/*.test.tsx", "src/test-components.tsx"]
+  "include": ["src/index.ts"]
 }
