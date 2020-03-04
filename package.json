@@ -1,6 +1,6 @@
 {
   "name": "react-storage-hooks",
-  "version": "3.0.3",
+  "version": "4.0.0",
   "description": "React hooks for persistent state",
   "keywords": [
     "react",
