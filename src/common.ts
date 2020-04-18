@@ -53,7 +53,7 @@ export function useStorageWriter<S>(
   const [writeError, setWriteError] = useState<Error | undefined>(undefined);
 
   useEffect(() => {
-    writeItem<S>(storage, key, state).catch(error => {
+    writeItem<S>(storage, key, state).catch((error) => {
       if (!error || !error.message || error.message !== writeError?.message) {
         setWriteError(error);
       }

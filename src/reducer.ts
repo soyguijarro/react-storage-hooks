@@ -48,7 +48,7 @@ function useStorageReducer<S, A, I = S>(
   key: string,
   reducer: Reducer<S, A>,
   defaultInitialArg: I,
-  defaultInit: (defaultInitialArg: I | S) => S = x => x as S
+  defaultInit: (defaultInitialArg: I | S) => S = (x) => x as S
 ): [S, Dispatch<A>, Error | undefined] {
   const defaultState = defaultInit(defaultInitialArg);
 
