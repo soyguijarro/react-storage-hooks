@@ -1,14 +1,20 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 
-export type StorageObj = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+type MakePromisable<T> = T extends (...args: infer U) => infer R ? (...args: U) => Promise<R> | R : T;
+
+export type StorageObj = {
+  getItem: MakePromisable<Storage['getItem']>
+  setItem: MakePromisable<Storage['setItem']>
+  removeItem: MakePromisable<Storage['removeItem']>
+}
 
 function fromStorage<T>(value: string | null) {
   return value !== null ? (JSON.parse(value) as T) : null;
 }
 
-function readItem<T>(storage: StorageObj, key: string) {
+async function readItem<T>(storage: StorageObj, key: string) {
   try {
-    const storedValue = storage.getItem(key);
+    const storedValue = await storage.getItem(key);
     return fromStorage<T>(storedValue);
   } catch (e) {
     return null;
@@ -19,12 +25,12 @@ function toStorage<T>(value: T | null) {
   return JSON.stringify(value);
 }
 
-function writeItem<T>(storage: StorageObj, key: string, value: T | null) {
+async function writeItem<T>(storage: StorageObj, key: string, value: T | null) {
   try {
     if (value !== null) {
-      storage.setItem(key, toStorage<T>(value));
+      await storage.setItem(key, toStorage<T>(value));
     } else {
-      storage.removeItem(key);
+      await storage.removeItem(key);
     }
     return Promise.resolve();
   } catch (error) {
@@ -39,10 +45,10 @@ export function useInitialState<S>(
 ) {
   const defaultStateRef = useRef(defaultState);
 
-  return useMemo(() => readItem<S>(storage, key) ?? defaultStateRef.current, [
-    key,
-    storage,
-  ]);
+  return useMemo(
+    () => readItem<S>(storage, key) ?? defaultStateRef.current,
+    [key, storage]
+  );
 }
 
 export function useStorageWriter<S>(
@@ -85,7 +91,9 @@ export function useStorageListener<S>(
       return;
     }
 
-    onChangeRef.current(readItem<S>(storage, key) ?? defaultStateRef.current);
+    (async () => {
+      onChangeRef.current(await readItem<S>(storage, key) ?? defaultStateRef.current);
+    })()
   }, [key, storage]);
 
   useEffect(() => {
