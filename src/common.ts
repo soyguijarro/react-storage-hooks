@@ -97,7 +97,10 @@ export function useStorageListener<S>(
       }
     }
 
-    if (typeof window !== 'undefined') {
+    if (
+      typeof window !== 'undefined' &&
+      typeof window.addEventListener !== 'undefined'
+    ) {
       window.addEventListener('storage', onStorageChange);
       return () => {
         window.removeEventListener('storage', onStorageChange);
