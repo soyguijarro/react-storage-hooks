@@ -6,7 +6,7 @@ function fromStorage<T>(value: string | null) {
   return value !== null ? (JSON.parse(value) as T) : null;
 }
 
-function readItem<T>(storage: StorageObj, key: string) {
+export function readItem<T>(storage: StorageObj, key: string) {
   try {
     const storedValue = storage.getItem(key);
     return fromStorage<T>(storedValue);

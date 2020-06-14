@@ -1,7 +1,7 @@
-import { useReducer, Reducer, Dispatch } from 'react';
+import { useReducer, useEffect, Reducer, Dispatch } from 'react';
 
 import {
-  useInitialState,
+  readItem,
   useStorageListener,
   useStorageWriter,
   StorageObj,
@@ -54,8 +54,14 @@ function useStorageReducer<S, A, I = S>(
 
   const [state, dispatch] = useReducer(
     addForceStateActionToReducer(reducer),
-    useInitialState(storage, key, defaultState)
+    defaultState
   );
+
+  useEffect(() => {
+    const storageValue = readItem<S>(storage, key);
+    if (storageValue)
+      dispatch({ type: FORCE_STATE_ACTION, payload: storageValue });
+  }, [storage, key]);
 
   useStorageListener(storage, key, defaultState, (newValue: S) => {
     dispatch({ type: FORCE_STATE_ACTION, payload: newValue });
