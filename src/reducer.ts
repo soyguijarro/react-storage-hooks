@@ -1,4 +1,4 @@
-import { useReducer, Reducer, Dispatch } from 'react';
+import { useReducer, Reducer, Dispatch, useEffect } from 'react';
 
 import {
   useInitialState,
@@ -46,20 +46,23 @@ function useStorageReducer<S, A, I>(
 function useStorageReducer<S, A, I = S>(
   storage: StorageObj,
   key: string,
-  reducer: Reducer<S, A>,
+  reducer: Reducer<S | null, A>,
   defaultInitialArg: I,
   defaultInit: (defaultInitialArg: I | S) => S = (x) => x as S
-): [S, Dispatch<A>, Error | undefined] {
+): [S | null, Dispatch<A>, Error | undefined] {
   const defaultState = defaultInit(defaultInitialArg);
 
-  const [state, dispatch] = useReducer(
-    addForceStateActionToReducer(reducer),
-    useInitialState(storage, key, defaultState)
-  );
+  const [state, dispatch] = useReducer(addForceStateActionToReducer(reducer), null);
+  const initialState = useInitialState(storage, key, defaultState)
+
+  useEffect(() => {
+    initialState.then((state) => dispatch({ type: FORCE_STATE_ACTION, payload: state }))
+  })
 
   useStorageListener(storage, key, defaultState, (newValue: S) => {
     dispatch({ type: FORCE_STATE_ACTION, payload: newValue });
   });
+
   const writeError = useStorageWriter(storage, key, state);
 
   return [state, dispatch, writeError];

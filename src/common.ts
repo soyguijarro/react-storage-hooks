@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 
-type MakePromisable<T> = T extends (...args: infer U) => infer R ? (...args: U) => Promise<R> | R : T;
+type MakePromisable<T> = T extends (...args: infer U) => infer R
+  ? (...args: U) => Promise<R> | R
+  : T;
 
 export type StorageObj = {
   getItem: MakePromisable<Storage['getItem']>
@@ -46,7 +48,7 @@ export function useInitialState<S>(
   const defaultStateRef = useRef(defaultState);
 
   return useMemo(
-    () => readItem<S>(storage, key) ?? defaultStateRef.current,
+    async () => await readItem<S>(storage, key) ?? defaultStateRef.current,
     [key, storage]
   );
 }

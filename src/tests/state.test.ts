@@ -13,51 +13,61 @@ afterEach(() => {
 });
 
 describe('initialization', () => {
-  it('returns storage value when available', () => {
+  it('returns storage value when available', async () => {
     localStorage.setItem('key', '{"value":1}');
 
-    const { result } = renderHook(() =>
+    const { result, waitForNextUpdate } = renderHook(() =>
       useStorageState(localStorage, 'key', { value: 0 })
     );
+
+    await waitForNextUpdate();
 
     const [state] = result.current;
     expect(state).toStrictEqual({ value: 1 });
   });
 
-  it('returns default state when storage empty and writes it to storage', () => {
-    const { result } = renderHook(() =>
+  it('returns default state when storage empty and writes it to storage', async () => {
+    const { result, waitForNextUpdate } = renderHook(() =>
       useStorageState(localStorage, 'key', { value: 0 })
     );
 
+    await waitForNextUpdate();
+
     const [state] = result.current;
     expect(state).toStrictEqual({ value: 0 });
     expect(localStorage.getItem('key')).toBe('{"value":0}');
   });
 
-  it('returns default state when storage empty and writes it to storage (lazy initialization)', () => {
-    const { result } = renderHook(() =>
+  it('returns default state when storage empty and writes it to storage (lazy initialization)', async () => {
+    const { result, waitForNextUpdate } = renderHook(() =>
       useStorageState(localStorage, 'key', () => ({ value: 0 }))
     );
 
+    await waitForNextUpdate();
+
     const [state] = result.current;
     expect(state).toStrictEqual({ value: 0 });
     expect(localStorage.getItem('key')).toBe('{"value":0}');
   });
 
-  it('returns null when storage empty and no default provided', () => {
-    const { result } = renderHook(() => useStorageState(localStorage, 'key'));
+  it('returns null when storage empty and no default provided', async () => {
+    const { result, waitForNextUpdate } = renderHook(() => useStorageState(localStorage, 'key'));
+
+    await waitForNextUpdate();
 
     const [state] = result.current;
     expect(state).toBeNull();
   });
 
-  it('returns default state when storage reading fails', () => {
+  it('returns default state when storage reading fails', async () => {
     mockStorageErrorOnce(localStorage, 'getItem', 'Error message');
     localStorage.setItem('key', '{"value":1}');
 
-    const { result } = renderHook(() =>
+    const { result, waitForNextUpdate } = renderHook(() =>
       useStorageState(localStorage, 'key', { value: 0 })
     );
+
+    await waitForNextUpdate();
 
     const {
       current: [state],

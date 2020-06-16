@@ -1,4 +1,4 @@
-import { useState, Dispatch, SetStateAction } from 'react';
+import { useState, Dispatch, SetStateAction, useEffect } from 'react';
 
 import {
   useInitialState,
@@ -23,9 +23,12 @@ function useStorageState<S>(
   key: string,
   defaultState: S | (() => S) | null = null
 ) {
-  const [state, setState] = useState(
-    useInitialState(storage, key, defaultState)
-  );
+  const [state, setState] = useState<typeof defaultState>(null)
+  const initialState = useInitialState(storage, key, defaultState)
+
+  useEffect(() => {
+    initialState.then(setState)
+  })
 
   useStorageListener(storage, key, defaultState, setState);
   const writeError = useStorageWriter(storage, key, state);
