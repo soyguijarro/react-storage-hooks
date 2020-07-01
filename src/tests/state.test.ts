@@ -13,17 +13,32 @@ afterEach(() => {
 });
 
 describe('initialization', () => {
-  it('returns storage value when available', async () => {
+  it.only('returns storage value when available', async () => {
     localStorage.setItem('key', '{"value":1}');
 
     const { result, waitForNextUpdate } = renderHook(() =>
       useStorageState(localStorage, 'key', { value: 0 })
     );
 
+    const {
+      state: beforeUpdateState,
+      isLoading: beforeUpdateIsLoading,
+      isError: beforeUpdateIsError,
+    } = result.current;
+    expect(beforeUpdateIsLoading).toBe(true)
+    expect(beforeUpdateIsError).toBe(false)
+    expect(beforeUpdateState).toBeUndefined()
+
     await waitForNextUpdate();
 
-    const [state] = result.current;
-    expect(state).toStrictEqual({ value: 1 });
+    const {
+      state: afterUpdateState,
+      isLoading: afterUpdateIsLoading,
+      isError: afterUpdateIsError,
+    } = result.current;
+    expect(afterUpdateIsLoading).toBe(false)
+    expect(afterUpdateIsError).toBe(false)
+    expect(afterUpdateState).toStrictEqual({ value: 1 });
   });
 
   it('returns default state when storage empty and writes it to storage', async () => {
@@ -33,7 +48,7 @@ describe('initialization', () => {
 
     await waitForNextUpdate();
 
-    const [state] = result.current;
+    const { state } = result.current;
     expect(state).toStrictEqual({ value: 0 });
     expect(localStorage.getItem('key')).toBe('{"value":0}');
   });
@@ -45,7 +60,7 @@ describe('initialization', () => {
 
     await waitForNextUpdate();
 
-    const [state] = result.current;
+    const { state } = result.current;
     expect(state).toStrictEqual({ value: 0 });
     expect(localStorage.getItem('key')).toBe('{"value":0}');
   });
@@ -55,7 +70,7 @@ describe('initialization', () => {
 
     await waitForNextUpdate();
 
-    const [state] = result.current;
+    const { state } = result.current;
     expect(state).toBeNull();
   });
 
@@ -70,7 +85,7 @@ describe('initialization', () => {
     await waitForNextUpdate();
 
     const {
-      current: [state],
+      current: { state },
     } = result;
     expect(state).toStrictEqual({ value: 0 });
   });
@@ -82,21 +97,21 @@ describe('initialization', () => {
     const { result } = renderHook(() => useStorageState(localStorage, 'key'));
 
     const {
-      current: [state],
+      current: { state },
     } = result;
     expect(state).toBeNull();
   });
 });
 
 describe('updates', () => {
-  it('returns new state and writes to storage', () => {
+  it.only('returns new state and writes to storage', () => {
     const { result } = renderHook(() =>
       useStorageState(localStorage, 'key', { value: 0 })
     );
-    const [, setState] = result.current;
+    const { setState } = result.current;
     act(() => setState({ value: 1 }));
 
-    const [newState] = result.current;
+    const { state: newState } = result.current;
     expect(newState).toStrictEqual({ value: 1 });
     expect(localStorage.getItem('key')).toBe('{"value":1}');
   });
@@ -107,11 +122,11 @@ describe('updates', () => {
     const { result, waitForNextUpdate } = renderHook(() =>
       useStorageState(localStorage, 'key', { value: 0 })
     );
-    const [, setState] = result.current;
+    const { setState } = result.current;
     act(() => setState({ value: 1 }));
     await waitForNextUpdate();
 
-    const [newState, , writeError] = result.current;
+    const { state: newState, error: writeError } = result.current;
     expect(newState).toStrictEqual({ value: 1 });
     expect(writeError).toEqual(Error('Error message'));
   });
@@ -122,17 +137,17 @@ describe('updates', () => {
     const { result, waitForNextUpdate } = renderHook(() =>
       useStorageState(localStorage, 'key', { value: 0 })
     );
-    const [, setState] = result.current;
+    const { setState } = result.current;
     act(() => setState({ value: 1 }));
     await waitForNextUpdate();
 
-    const [, newSetState, writeError] = result.current;
+    const { setState: newSetState, error: writeError } = result.current;
     expect(writeError).toEqual(Error('Error message'));
 
     act(() => newSetState({ value: 2 }));
     await waitForNextUpdate();
 
-    const [, , newWriteError] = result.current;
+    const { error: newWriteError } = result.current;
     expect(newWriteError).toEqual(Error('Error message'));
   });
 
@@ -142,16 +157,16 @@ describe('updates', () => {
     const { result, waitForNextUpdate } = renderHook(() =>
       useStorageState(localStorage, 'key', { value: 0 })
     );
-    const [, setState] = result.current;
+    const { setState } = result.current;
     act(() => setState({ value: 1 }));
     await waitForNextUpdate();
 
-    const [, newSetState, writeError] = result.current;
+    const { setState: newSetState, error: writeError } = result.current;
     expect(writeError).toEqual(Error('Error message'));
 
     act(() => newSetState({ value: 2 }));
 
-    const [, , newWriteError] = result.current;
+    const { error: newWriteError } = result.current;
     expect(newWriteError).toBeUndefined();
   });
 
@@ -164,7 +179,7 @@ describe('updates', () => {
     );
     rerender({ value: 2 });
 
-    const [newState] = result.current;
+    const { state: newState } = result.current;
     expect(newState).toStrictEqual({ value: 1 });
   });
 
@@ -175,7 +190,7 @@ describe('updates', () => {
     );
     rerender({ value: 1 });
 
-    const [newState] = result.current;
+    const { state: newState } = result.current;
     expect(newState).toStrictEqual({ value: 0 });
   });
 
@@ -187,10 +202,10 @@ describe('updates', () => {
         value: 0,
       })
     );
-    const [, setState] = result.current;
+    const { setState } = result.current;
     act(() => setState(null));
 
-    const [newState] = result.current;
+    const { state: newState } = result.current;
     expect(newState).toBeNull();
     expect(localStorage.getItem('key')).toBeNull();
   });
@@ -202,7 +217,7 @@ describe('updates', () => {
 
     act(() => fireStorageEvent('key', '{"value":1}'));
 
-    const [newState] = result.current;
+    const { state: newState } = result.current;
     expect(newState).toStrictEqual({ value: 1 });
   });
 
@@ -213,7 +228,7 @@ describe('updates', () => {
 
     act(() => fireStorageEvent('key', null));
 
-    const [newState] = result.current;
+    const { state: newState } = result.current;
     expect(newState).toStrictEqual({ value: 0 });
   });
 
@@ -226,7 +241,7 @@ describe('updates', () => {
       fireStorageEvent('other-key', '{"value":1}');
     });
 
-    const [newState] = result.current;
+    const { state: newState } = result.current;
     expect(newState).toStrictEqual({ value: 0 });
   });
 });
@@ -243,7 +258,7 @@ describe('resetting', () => {
     );
     rerender('new-key');
 
-    const [newState] = result.current;
+    const { state: newState } = result.current;
     expect(newState).toStrictEqual({ value: 1 });
   });
 
@@ -258,7 +273,7 @@ describe('resetting', () => {
     );
     rerender('new-key');
 
-    const [newState] = result.current;
+    const { state: newState } = result.current;
     expect(newState).toStrictEqual({ value: 0 });
   });
 
@@ -273,7 +288,7 @@ describe('resetting', () => {
     );
     rerender('new-key');
 
-    const [newState] = result.current;
+    const { state: newState } = result.current;
     expect(newState).toBeNull();
   });
 
@@ -284,16 +299,16 @@ describe('resetting', () => {
       key => useStorageState(localStorage, key, { value: 0 }),
       { initialProps: 'key' }
     );
-    const [, setState] = result.current;
+    const { setState } = result.current;
     act(() => setState({ value: 1 }));
     await waitForNextUpdate();
 
-    const [, , writeError] = result.current;
+    const { error: writeError } = result.current;
     expect(writeError).toEqual(Error('Error message'));
 
     rerender('new-key');
 
-    const [, , newWriteError] = result.current;
+    const { error: newWriteError } = result.current;
     expect(newWriteError).toBeUndefined();
   });
 
@@ -308,7 +323,7 @@ describe('resetting', () => {
       }
     );
     rerender('new-key');
-    const [, setState] = result.current;
+    const { setState } = result.current;
     act(() => setState({ value: 3 }));
 
     expect(localStorage.getItem('key')).toBe('{"value":1}');

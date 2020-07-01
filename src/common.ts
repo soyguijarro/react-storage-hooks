@@ -27,7 +27,7 @@ function toStorage<T>(value: T | null) {
   return JSON.stringify(value);
 }
 
-async function writeItem<T>(storage: StorageObj, key: string, value: T | null) {
+export async function writeItem<T>(storage: StorageObj, key: string, value: T | null) {
   try {
     if (value !== null) {
       await storage.setItem(key, toStorage<T>(value));
@@ -56,35 +56,39 @@ export function useInitialState<S>(
 export function useStorageWriter<S>(
   storage: StorageObj,
   key: string,
-  state: S
+  state: S,
+  onError: (error: Error) => void
 ) {
-  const [writeError, setWriteError] = useState<Error | undefined>(undefined);
+  const [isWriting, setIsWriting] = useState(false)
+  const onErrorRef = useRef(onError);
 
   useEffect(() => {
-    writeItem<S>(storage, key, state).catch((error) => {
-      if (!error || !error.message || error.message !== writeError?.message) {
-        setWriteError(error);
-      }
-    });
+    setIsWriting(true)
 
-    if (writeError) {
-      return () => {
-        setWriteError(undefined);
-      };
-    }
-  }, [state, key, writeError, storage]);
+    writeItem<S>(storage, key, state)
+      .catch((error) => {
+        if (!error || !error.message) {
+          onErrorRef.current(error);
+        }
+      })
+      .finally(() => {
+        setIsWriting(false)
+      });
+  }, [state, key, storage]);
 
-  return writeError;
+  return { isWriting };
 }
 
 export function useStorageListener<S>(
   storage: StorageObj,
   key: string,
   defaultState: S,
-  onChange: (newValue: S) => void
+  onChange: (newValue: S) => void,
+  onLoading: (isLoading: boolean) => void
 ) {
   const defaultStateRef = useRef(defaultState);
   const onChangeRef = useRef(onChange);
+  const onLoadingRef = useRef(onLoading);
 
   const firstRun = useRef(true);
   useEffect(() => {
@@ -93,9 +97,12 @@ export function useStorageListener<S>(
       return;
     }
 
-    (async () => {
-      onChangeRef.current(await readItem<S>(storage, key) ?? defaultStateRef.current);
-    })()
+    onLoadingRef.current(true)
+    readItem<S>(storage, key)
+      .then((value) => {
+        onChangeRef.current(value ?? defaultStateRef.current)
+      })
+      .finally(() => onLoadingRef.current(false))
   }, [key, storage]);
 
   useEffect(() => {
