@@ -1,4 +1,4 @@
-import { useReducer, Reducer, Dispatch } from 'react';
+import { useReducer, Reducer, Dispatch, useEffect, useState } from 'react';
 
 import {
   useInitialState,
@@ -9,6 +9,18 @@ import {
 
 const FORCE_STATE_ACTION = '__FORCE_STATE_INTERNAL_API__';
 type ForceStateAction<S> = { type: typeof FORCE_STATE_ACTION; payload: S };
+
+export type State<S> = S | null | undefined
+
+export type UseStorageReducerResult<S, A> = {
+  state: State<S>,
+  dispatch: Dispatch<A | ForceStateAction<S>>
+  isLoading: boolean,
+  isWriting: boolean,
+  isError: boolean,
+  error: Error | undefined
+}
+
 
 function isForceStateAction<S, A>(
   action: A | ForceStateAction<S>
@@ -33,7 +45,7 @@ function useStorageReducer<S, A>(
   key: string,
   reducer: Reducer<S, A>,
   defaultState: S
-): [S, Dispatch<A>, Error | undefined];
+): UseStorageReducerResult<S, A>
 
 function useStorageReducer<S, A, I>(
   storage: StorageObj,
@@ -41,28 +53,50 @@ function useStorageReducer<S, A, I>(
   reducer: Reducer<S, A>,
   defaultInitialArg: I,
   defaultInit: (defaultInitialArg: I) => S
-): [S, Dispatch<A>, Error | undefined];
+): UseStorageReducerResult<S, A>
 
 function useStorageReducer<S, A, I = S>(
   storage: StorageObj,
   key: string,
-  reducer: Reducer<S, A>,
+  reducer: Reducer<S | null, A>,
   defaultInitialArg: I,
   defaultInit: (defaultInitialArg: I | S) => S = (x) => x as S
-): [S, Dispatch<A>, Error | undefined] {
+): UseStorageReducerResult<S, A> {
   const defaultState = defaultInit(defaultInitialArg);
 
-  const [state, dispatch] = useReducer(
-    addForceStateActionToReducer(reducer),
-    useInitialState(storage, key, defaultState)
+  const [state, dispatch] = useReducer(addForceStateActionToReducer(reducer), null);
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<Error | undefined>(undefined)
+  const initialState = useInitialState(storage, key, defaultState)
+
+  useEffect(() => {
+    initialState
+      .then((state) => {
+        dispatch({ type: FORCE_STATE_ACTION, payload: state })
+        setIsLoading(false)
+      })
+  })
+
+  useStorageListener(
+    storage,
+    key,
+    defaultState,
+    (newValue: S) => {
+      dispatch({ type: FORCE_STATE_ACTION, payload: newValue });
+    },
+    setIsLoading
   );
 
-  useStorageListener(storage, key, defaultState, (newValue: S) => {
-    dispatch({ type: FORCE_STATE_ACTION, payload: newValue });
-  });
-  const writeError = useStorageWriter(storage, key, state);
+  const { isWriting } = useStorageWriter(storage, key, state, setError);
 
-  return [state, dispatch, writeError];
+  return {
+    state,
+    dispatch,
+    isLoading,
+    isWriting,
+    isError: error !== undefined,
+    error
+  };
 }
 
 export default useStorageReducer;

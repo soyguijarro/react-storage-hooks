@@ -1,14 +1,22 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 
-export type StorageObj = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+type MakePromisable<T> = T extends (...args: infer U) => infer R
+  ? (...args: U) => Promise<R> | R
+  : T;
+
+export type StorageObj = {
+  getItem: MakePromisable<Storage['getItem']>
+  setItem: MakePromisable<Storage['setItem']>
+  removeItem: MakePromisable<Storage['removeItem']>
+}
 
 function fromStorage<T>(value: string | null) {
   return value !== null ? (JSON.parse(value) as T) : null;
 }
 
-function readItem<T>(storage: StorageObj, key: string) {
+async function readItem<T>(storage: StorageObj, key: string) {
   try {
-    const storedValue = storage.getItem(key);
+    const storedValue = await storage.getItem(key);
     return fromStorage<T>(storedValue);
   } catch (e) {
     return null;
@@ -19,12 +27,12 @@ function toStorage<T>(value: T | null) {
   return JSON.stringify(value);
 }
 
-function writeItem<T>(storage: StorageObj, key: string, value: T | null) {
+export async function writeItem<T>(storage: StorageObj, key: string, value: T | null) {
   try {
     if (value !== null) {
-      storage.setItem(key, toStorage<T>(value));
+      await storage.setItem(key, toStorage<T>(value));
     } else {
-      storage.removeItem(key);
+      await storage.removeItem(key);
     }
     return Promise.resolve();
   } catch (error) {
@@ -39,44 +47,48 @@ export function useInitialState<S>(
 ) {
   const defaultStateRef = useRef(defaultState);
 
-  return useMemo(() => readItem<S>(storage, key) ?? defaultStateRef.current, [
-    key,
-    storage,
-  ]);
+  return useMemo(
+    async () => await readItem<S>(storage, key) ?? defaultStateRef.current,
+    [key, storage]
+  );
 }
 
 export function useStorageWriter<S>(
   storage: StorageObj,
   key: string,
-  state: S
+  state: S,
+  onError: (error: Error) => void
 ) {
-  const [writeError, setWriteError] = useState<Error | undefined>(undefined);
+  const [isWriting, setIsWriting] = useState(false)
+  const onErrorRef = useRef(onError);
 
   useEffect(() => {
-    writeItem<S>(storage, key, state).catch((error) => {
-      if (!error || !error.message || error.message !== writeError?.message) {
-        setWriteError(error);
-      }
-    });
+    setIsWriting(true)
 
-    if (writeError) {
-      return () => {
-        setWriteError(undefined);
-      };
-    }
-  }, [state, key, writeError, storage]);
+    writeItem<S>(storage, key, state)
+      .catch((error) => {
+        if (!error || !error.message) {
+          onErrorRef.current(error);
+        }
+      })
+      .finally(() => {
+        setIsWriting(false)
+      });
+  }, [state, key, storage]);
 
-  return writeError;
+  return { isWriting };
 }
 
 export function useStorageListener<S>(
   storage: StorageObj,
   key: string,
   defaultState: S,
-  onChange: (newValue: S) => void
+  onChange: (newValue: S) => void,
+  onLoading: (isLoading: boolean) => void
 ) {
   const defaultStateRef = useRef(defaultState);
   const onChangeRef = useRef(onChange);
+  const onLoadingRef = useRef(onLoading);
 
   const firstRun = useRef(true);
   useEffect(() => {
@@ -85,7 +97,12 @@ export function useStorageListener<S>(
       return;
     }
 
-    onChangeRef.current(readItem<S>(storage, key) ?? defaultStateRef.current);
+    onLoadingRef.current(true)
+    readItem<S>(storage, key)
+      .then((value) => {
+        onChangeRef.current(value ?? defaultStateRef.current)
+      })
+      .finally(() => onLoadingRef.current(false))
   }, [key, storage]);
 
   useEffect(() => {
