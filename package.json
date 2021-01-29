@@ -36,6 +36,7 @@
   },
   "files": [
     "dist",
+    "src",
     "dist/index.d.ts"
   ],
   "author": "Ramón Guijarro <hola@soyguijarro.com>",
