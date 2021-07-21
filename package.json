@@ -42,7 +42,7 @@
   "license": "MIT",
   "repository": "https://github.com/soyguijarro/react-storage-hooks",
   "peerDependencies": {
-    "react": "^16.8.0"
+    "react": "^16.8.0 || ^17.0.0"
   },
   "husky": {
     "hooks": {
