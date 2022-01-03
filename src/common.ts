@@ -39,10 +39,10 @@ export function useInitialState<S>(
 ) {
   const defaultStateRef = useRef(defaultState);
 
-  return useMemo(() => readItem<S>(storage, key) ?? defaultStateRef.current, [
-    key,
-    storage,
-  ]);
+  return useMemo(
+    () => readItem<S>(storage, key) ?? defaultStateRef.current,
+    [key, storage]
+  );
 }
 
 export function useStorageWriter<S>(

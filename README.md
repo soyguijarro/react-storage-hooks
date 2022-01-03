@@ -22,7 +22,7 @@ Custom [React hooks](https://reactjs.org/docs/hooks-intro) for keeping applicati
 
 ## Requirements
 
-You need to use [version 16.8.0](https://github.com/facebook/react/blob/master/CHANGELOG.md#1680-february-6-2019) or greater of React, since that's the first one to include hooks. If you still need to create your application, [Create React App](https://create-react-app.dev/) is the officially supported way.
+You need to use [version 17.0.0](https://github.com/facebook/react/blob/main/CHANGELOG.md#1700-october-20-2020) or greater of React, since that's the first one to include hooks. If you still need to create your application, [Create React App](https://create-react-app.dev/) is the officially supported way.
 
 ## Installation
 
